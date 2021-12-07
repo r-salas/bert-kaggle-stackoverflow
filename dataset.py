@@ -31,8 +31,7 @@ class StackOverflowDataset(Dataset):
 
     @property
     def pos_weight(self):
-        closed = self._df["OpenStatus"] != "open"
-        pos_weight = calculate_pos_weights([closed.sum()], len(self._df))
+        pos_weight = calculate_pos_weights([self.targets.sum()], len(self.targets))
         return pos_weight
 
     def __getitem__(self, index):
@@ -61,4 +60,4 @@ class StackOverflowDataset(Dataset):
         }
 
     def __len__(self):
-        return len(self._df)
+        return len(self.features)
