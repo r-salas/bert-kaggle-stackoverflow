@@ -49,7 +49,7 @@ def train(train_fpath, epochs: int = 10, device: str = "auto", num_workers: int 
         num_training_steps=len(train_loader) * epochs
     )
 
-    criterion = nn.BCEWithLogitsLoss(pos_weight=dataset.pos_weight).to(device)
+    criterion = nn.BCEWithLogitsLoss().to(device)
 
     pbar = tqdm(range(epochs))
 
