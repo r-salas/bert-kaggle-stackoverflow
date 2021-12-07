@@ -38,7 +38,7 @@ def train(train_fpath, epochs: int = 10, device: str = "auto", num_workers: int 
 
     train_dataset, val_dataset, test_dataset = random_split(dataset, [train_size, val_size, test_size])
 
-    train_loader = DataLoader(train_dataset, batch_size=32, num_workers=num_workers)
+    train_loader = DataLoader(train_dataset, batch_size=32, num_workers=num_workers, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=32, num_workers=num_workers)
 
     optimizer = AdamW(model.parameters(), lr=2e-5, correct_bias=False)
@@ -53,11 +53,20 @@ def train(train_fpath, epochs: int = 10, device: str = "auto", num_workers: int 
 
     pbar = tqdm(range(epochs))
 
+    train_accuracy = torchmetrics.Accuracy(num_classes=1).to(device)
+    train_precision = torchmetrics.Precision(num_classes=1).to(device)
+    train_recall = torchmetrics.Recall(num_classes=1).to(device)
+
+    val_accuracy = torchmetrics.Accuracy(num_classes=1).to(device)
+    val_precision = torchmetrics.Precision(num_classes=1).to(device)
+    val_recall = torchmetrics.Recall(num_classes=1).to(device)
+
     for epoch in tqdm(range(epochs)):
         cum_train_loss = 0.0
-        train_accuracy = torchmetrics.Accuracy(num_classes=1).to(device)
-        train_precision = torchmetrics.Precision(num_classes=1).to(device)
-        train_recall = torchmetrics.Recall(num_classes=1).to(device)
+
+        train_accuracy.reset()
+        train_precision.reset()
+        train_recall.reset()
 
         for batch in tqdm(train_loader, leave=False, desc="Training"):
             input_ids = batch["input_ids"].to(device)
@@ -88,9 +97,10 @@ def train(train_fpath, epochs: int = 10, device: str = "auto", num_workers: int 
             train_recall(y_pred_proba, target)
 
         cum_val_loss = 0.0
-        val_accuracy = torchmetrics.Accuracy(num_classes=1).to(device)
-        val_precision = torchmetrics.Precision(num_classes=1).to(device)
-        val_recall = torchmetrics.Recall(num_classes=1).to(device)
+
+        val_accuracy.reset()
+        val_precision.reset()
+        val_recall.reset()
 
         for batch in tqdm(val_loader, leave=False, desc="Validating"):
             input_ids = batch["input_ids"].to(device)
