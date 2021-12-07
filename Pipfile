@@ -17,6 +17,7 @@ tqdm = "*"
 torchmetrics = "*"
 typer = "*"
 transformers = "*"
+imbalanced-learn = "*"
 
 [dev-packages]
 jupyterlab = "*"
