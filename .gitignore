@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Pycharm junk
+.idea
+
+# Dataset
+predict-closed-questions-on-stack-overflow

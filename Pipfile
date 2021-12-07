@@ -1,0 +1,26 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+pandas = "*"
+matplotlib = "*"
+seaborn = "*"
+beautifulsoup4 = "*"
+markdown = "*"
+swifter = "*"
+pandarallel = "*"
+scikit-learn = "*"
+spacy = "*"
+torch = "*"
+tqdm = "*"
+torchmetrics = "*"
+typer = "*"
+transformers = "*"
+
+[dev-packages]
+jupyterlab = "*"
+
+[requires]
+python_version = "3.8"
