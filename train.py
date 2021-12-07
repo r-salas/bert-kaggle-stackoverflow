@@ -54,16 +54,10 @@ def train(train_fpath, epochs: int = 10, device: str = "auto", num_workers: int 
     pbar = tqdm(range(epochs))
 
     for epoch in tqdm(range(epochs)):
-        cum_val_loss = 0.0
         cum_train_loss = 0.0
-
-        train_accuracy = torchmetrics.Accuracy(num_classes=1)
-        train_precision = torchmetrics.Precision(num_classes=1)
-        train_recall = torchmetrics.Recall(num_classes=1)
-
-        val_accuracy = torchmetrics.Accuracy(num_classes=1)
-        val_precision = torchmetrics.Precision(num_classes=1)
-        val_recall = torchmetrics.Recall(num_classes=1)
+        train_accuracy = torchmetrics.Accuracy(num_classes=1).to(device)
+        train_precision = torchmetrics.Precision(num_classes=1).to(device)
+        train_recall = torchmetrics.Recall(num_classes=1).to(device)
 
         for batch in tqdm(train_loader, leave=False, desc="Training"):
             input_ids = batch["input_ids"].to(device)
@@ -92,6 +86,11 @@ def train(train_fpath, epochs: int = 10, device: str = "auto", num_workers: int 
             train_accuracy(y_pred_proba, target)
             train_precision(y_pred_proba, target)
             train_recall(y_pred_proba, target)
+
+        cum_val_loss = 0.0
+        val_accuracy = torchmetrics.Accuracy(num_classes=1).to(device)
+        val_precision = torchmetrics.Precision(num_classes=1).to(device)
+        val_recall = torchmetrics.Recall(num_classes=1).to(device)
 
         for batch in tqdm(val_loader, leave=False, desc="Validating"):
             input_ids = batch["input_ids"].to(device)

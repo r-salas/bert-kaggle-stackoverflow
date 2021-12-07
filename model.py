@@ -18,10 +18,11 @@ class StackOverflowClassifier(nn.Module):
         self.out = nn.Linear(self.bert.config.hidden_size, 1)
 
     def forward(self, input_ids, attention_mask):
-        _, pooled_output = self.bert(
+        _, output = self.bert(
             input_ids=input_ids,
             attention_mask=attention_mask,
             return_dict=False
         )
-        output = self.drop(pooled_output)
-        return self.out(output)
+        output = self.drop(output)
+        output = self.out(output)
+        return output
