@@ -29,7 +29,7 @@ def train(train_fpath, epochs: int = 10, device: str = "auto", num_workers: int 
     np.random.seed(seed)
     torch.manual_seed(seed)
 
-    dataset = StackOverflowDataset(train_fpath)
+    dataset = StackOverflowDataset(train_fpath, seed)
     model = StackOverflowClassifier().to(device)
 
     train_size = int(0.7 * len(dataset))

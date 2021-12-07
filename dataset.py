@@ -7,6 +7,7 @@
 import torch
 import pandas as pd
 
+from typing import Optional
 from torch.utils.data import Dataset
 from transformers import BertTokenizer
 from imblearn.under_sampling import RandomUnderSampler
@@ -16,14 +17,14 @@ from utils import md_to_text, calculate_pos_weights
 
 class StackOverflowDataset(Dataset):
 
-    def __init__(self, fpath):
+    def __init__(self, fpath, seed: Optional[int] = None):
         df = pd.read_csv(fpath, index_col="PostId")
         df["Closed"] = df["OpenStatus"] != "open"
 
         features = df.drop(columns=["Closed"])
         targets = df["Closed"]
 
-        undersampler = RandomUnderSampler()
+        undersampler = RandomUnderSampler(random_state=seed)
 
         self.features, self.targets = undersampler.fit_resample(features, targets)
 
