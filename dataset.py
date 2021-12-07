@@ -9,6 +9,7 @@ import pandas as pd
 
 from torch.utils.data import Dataset
 from transformers import BertTokenizer
+from imblearn.under_sampling import RandomUnderSampler
 
 from utils import md_to_text, calculate_pos_weights
 
@@ -16,7 +17,15 @@ from utils import md_to_text, calculate_pos_weights
 class StackOverflowDataset(Dataset):
 
     def __init__(self, fpath):
-        self._df = pd.read_csv(fpath, index_col="PostId")
+        df = pd.read_csv(fpath, index_col="PostId")
+        df["Closed"] = df["OpenStatus"] != "open"
+
+        features = df.drop(columns=["Closed"])
+        targets = df["Closed"]
+
+        undersampler = RandomUnderSampler()
+
+        self.features, self.targets = undersampler.fit_resample(features, targets)
 
         self._tokenizer = BertTokenizer.from_pretrained("bert-base-cased")
 
@@ -27,13 +36,11 @@ class StackOverflowDataset(Dataset):
         return pos_weight
 
     def __getitem__(self, index):
-        row = self._df.iloc[index]
+        features, target = self.features.iloc[index], self.targets.iloc[index]
 
-        title = row["Title"]
-        body = md_to_text(row["BodyMarkdown"])
+        title = features["Title"]
+        body = md_to_text(features["BodyMarkdown"])
         text = title + ". " + body
-
-        label = row["OpenStatus"] != "open"
 
         encoding = self._tokenizer.encode_plus(
             text,
@@ -48,7 +55,7 @@ class StackOverflowDataset(Dataset):
 
         return {
             'text': text,
-            'target': torch.tensor(label, dtype=torch.int32),
+            'target': torch.tensor(target, dtype=torch.int32),
             'input_ids': encoding['input_ids'].flatten(),
             'attention_mask': encoding['attention_mask'].flatten(),
         }
