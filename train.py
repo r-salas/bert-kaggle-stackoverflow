@@ -38,8 +38,8 @@ def train(train_fpath, epochs: int = 10, device: str = "auto", num_workers: int 
 
     train_dataset, val_dataset, test_dataset = random_split(dataset, [train_size, val_size, test_size])
 
-    train_loader = DataLoader(train_dataset, batch_size=32, num_workers=num_workers, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=32, num_workers=num_workers)
+    train_loader = DataLoader(train_dataset, batch_size=16, num_workers=num_workers, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=16, num_workers=num_workers)
 
     optimizer = AdamW(model.parameters(), lr=2e-5, correct_bias=False)
 
