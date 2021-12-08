@@ -44,8 +44,9 @@ class StackOverflowClassifier(pl.LightningModule):
         _, text_output = self.bert(input_ids=input_ids, attention_mask=attention_mask, return_dict=False)
         text_output = self.drop(text_output)
         text_output = self.text_fc(text_output)
+        text_output = torch.tanh(text_output)
 
-        output = self.out(torch.cat(meta, text_output), dim=1)
+        output = self.out(torch.cat((meta, text_output), dim=1))
 
         return output
 
