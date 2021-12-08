@@ -5,28 +5,37 @@
 #
 
 import torch
-import wandb
 import numpy as np
 import torchmetrics
 import torch.nn as nn
 import pytorch_lightning as pl
 import torch.nn.functional as F
 
+from typing import Optional
 from sklearn.metrics import ConfusionMatrixDisplay
 from transformers import BertModel, AdamW, get_linear_schedule_with_warmup
 
 
 class StackOverflowClassifier(pl.LightningModule):
 
-    def __init__(self):
+    def __init__(self, class_weights: Optional[np.ndarray] = None):
         super().__init__()
+
+        self.save_hyperparameters()
+
+        num_classes = 5
+
+        if class_weights is None:
+            class_weights = np.ones(num_classes)
+
+        self.class_weights = class_weights
 
         self.bert = BertModel.from_pretrained("bert-base-cased")
         self.drop = nn.Dropout(p=0.5)
-        self.out = nn.Linear(self.bert.config.hidden_size, 5)
+        self.out = nn.Linear(self.bert.config.hidden_size, num_classes)
 
-        self._val_accuracy = torchmetrics.Accuracy(num_classes=5)
-        self._train_accuracy = torchmetrics.Accuracy(num_classes=5)
+        self._val_accuracy = torchmetrics.Accuracy(num_classes=num_classes)
+        self._train_accuracy = torchmetrics.Accuracy(num_classes=num_classes)
 
     def forward(self, input_ids, attention_mask):
         _, output = self.bert(input_ids=input_ids, attention_mask=attention_mask, return_dict=False)
@@ -42,7 +51,8 @@ class StackOverflowClassifier(pl.LightningModule):
         y_pred = self(input_ids, attention_mask).squeeze()
         y_pred_proba = torch.softmax(y_pred, -1)
 
-        loss = F.cross_entropy(y_pred, target.long())
+        loss = F.cross_entropy(y_pred, target.long(),
+                               weight=torch.tensor(self.class_weights, dtype=torch.float32, device=self.device))
 
         self.log("train/loss", loss)
 

@@ -16,6 +16,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from imblearn.under_sampling import RandomUnderSampler
 from torch.utils.data import Dataset, DataLoader, Subset
+from sklearn.utils.class_weight import compute_class_weight
 
 from utils import md_to_text
 
@@ -35,6 +36,10 @@ class StackOverflowDataset(Dataset):
         self.features, self.targets = undersampler.fit_resample(features, targets)
 
         self._tokenizer = BertTokenizer.from_pretrained("bert-base-cased")
+
+    @property
+    def class_weight(self):
+        return compute_class_weight("balanced", classes=np.unique(self.targets), y=self.targets)
 
     def __getitem__(self, index):
         features, target = self.features.iloc[index], self.targets[index]
@@ -67,6 +72,8 @@ class StackOverflowDataset(Dataset):
 class StackOverflowDataModule(pl.LightningDataModule):
 
     def __init__(self, fpath, batch_size: int = 16, num_workers: int = 0, seed: Optional[int] = 0):
+        super().__init__()
+
         if num_workers < 0:
             num_workers = mp.cpu_count()
 
