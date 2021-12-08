@@ -133,3 +133,6 @@ dmypy.json
 
 # Dataset
 predict-closed-questions-on-stack-overflow
+
+# Tensorboard logs
+lightning_logs

@@ -5,11 +5,8 @@ name = "pypi"
 
 [packages]
 pandas = "*"
-matplotlib = "*"
-seaborn = "*"
 beautifulsoup4 = "*"
 markdown = "*"
-pandarallel = "*"
 scikit-learn = "*"
 spacy = "*"
 torch = "*"
@@ -18,9 +15,13 @@ torchmetrics = "*"
 typer = "*"
 transformers = "*"
 imbalanced-learn = "*"
+pytorch-lightning = "*"
 
 [dev-packages]
 jupyterlab = "*"
+matplotlib = "*"
+seaborn = "*"
+pandarallel = "*"
 
 [requires]
 python_version = "3.8"
