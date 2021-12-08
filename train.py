@@ -14,8 +14,8 @@ from model import StackOverflowClassifier
 from dataset import StackOverflowDataModule
 
 
-def train(data_fpath: str, output_fpath: str = "latest.ckpt", batch_size: int = 16, epochs: int = 10, num_workers: int = 0, seed: int = 0, gpus: int = -1,
-          accelerator: Optional[str] = "ddp"):
+def train(data: str, output: str = "latest.ckpt", batch_size: int = 16, epochs: int = 10, num_workers: int = 0,
+          seed: int = 0, gpus: int = -1, accelerator: Optional[str] = "ddp"):
     if not torch.cuda.is_available():
         gpus = None
         accelerator = None
@@ -24,13 +24,13 @@ def train(data_fpath: str, output_fpath: str = "latest.ckpt", batch_size: int = 
     torch.manual_seed(seed)
 
     model = StackOverflowClassifier()
-    datamodule = StackOverflowDataModule(data_fpath, batch_size=batch_size, num_workers=num_workers, seed=seed)
+    datamodule = StackOverflowDataModule(data, batch_size=batch_size, num_workers=num_workers, seed=seed)
 
     trainer = pl.Trainer(gradient_clip_val=1.0, max_epochs=epochs, gpus=gpus, accelerator=accelerator)
 
     trainer.fit(model, datamodule=datamodule)
 
-    trainer.save_checkpoint(output_fpath)
+    trainer.save_checkpoint(output)
 
 
 if __name__ == "__main__":
