@@ -23,10 +23,9 @@ class StackOverflowDataset(Dataset):
 
     def __init__(self, fpath, seed: Optional[int] = None):
         df = pd.read_csv(fpath, index_col="PostId")
-        df["Closed"] = df["OpenStatus"] != "open"
 
-        features = df.drop(columns=["Closed"])
-        targets = df["Closed"]
+        features = df.drop(columns=["OpenStatus"])
+        targets = df["OpenStatus"]
 
         undersampler = RandomUnderSampler(random_state=seed)
         self.features, self.targets = undersampler.fit_resample(features, targets)

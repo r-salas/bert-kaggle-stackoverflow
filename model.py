@@ -20,15 +20,15 @@ class StackOverflowClassifier(pl.LightningModule):
 
         self.bert = BertModel.from_pretrained("bert-base-cased")
         self.drop = nn.Dropout(p=0.3)
-        self.out = nn.Linear(self.bert.config.hidden_size, 1)
+        self.out = nn.Linear(self.bert.config.hidden_size, 5)
 
-        self._val_accuracy = torchmetrics.Accuracy(num_classes=1)
-        self._val_precision = torchmetrics.Accuracy(num_classes=1)
-        self._val_recall = torchmetrics.Recall(num_classes=1)
+        self._val_accuracy = torchmetrics.Accuracy(num_classes=5)
+        self._val_precision = torchmetrics.Accuracy(num_classes=5)
+        self._val_recall = torchmetrics.Recall(num_classes=5)
 
-        self._train_accuracy = torchmetrics.Accuracy(num_classes=1)
-        self._train_precision = torchmetrics.Accuracy(num_classes=1)
-        self._train_recall = torchmetrics.Recall(num_classes=1)
+        self._train_accuracy = torchmetrics.Accuracy(num_classes=5)
+        self._train_precision = torchmetrics.Accuracy(num_classes=5)
+        self._train_recall = torchmetrics.Recall(num_classes=5)
 
     def forward(self, input_ids, attention_mask):
         _, output = self.bert(input_ids=input_ids, attention_mask=attention_mask, return_dict=False)
