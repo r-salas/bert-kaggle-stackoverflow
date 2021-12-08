@@ -139,3 +139,6 @@ lightning_logs
 
 # Model checkpoint
 *.ckpt
+
+# Wandb logs
+wandb

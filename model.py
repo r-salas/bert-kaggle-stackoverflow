@@ -5,6 +5,7 @@
 #
 
 import torch
+import wandb
 import torchmetrics
 import torch.nn as nn
 import pytorch_lightning as pl
@@ -79,6 +80,12 @@ class StackOverflowClassifier(pl.LightningModule):
         loss = F.cross_entropy(y_pred, target.long())
 
         self.log("val/loss", loss)
+
+        self.logger.experiment.log({'conf': wandb.plot.confusion_matrix(
+            probs=y_pred_proba.cpu().numpy(), y_true=target.cpu().numpy(),
+            class_names=["not a real question", "not constructive", "off topic", "open", "too localized"],
+            title=f"Val: Epoch {self.current_epoch}"
+        )})
 
         self._val_accuracy(y_pred_proba, target)
 
