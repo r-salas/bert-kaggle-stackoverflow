@@ -94,7 +94,9 @@ class StackOverflowClassifier(pl.LightningModule):
             targets = np.concatenate([x["target"] for x in outputs])
             predictions = np.vstack([x["predictions"] for x in outputs])
 
-            cm = ConfusionMatrixDisplay.from_predictions(targets, np.argmax(predictions, 1))
+            cm = ConfusionMatrixDisplay.from_predictions(targets, np.argmax(predictions, 1),
+                                                         display_labels=["not a real question", "not constructive",
+                                                                         "off topic", "open", "too localized"])
 
             self.logger.experiment.log({
                 "conf": cm.figure_
