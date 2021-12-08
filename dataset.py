@@ -26,6 +26,11 @@ class StackOverflowDataset(Dataset):
     def __init__(self, fpath, seed: Optional[int] = None):
         df = pd.read_csv(fpath, index_col="PostId")
 
+        df["PostCreationDate"] = pd.to_datetime(df["PostCreationDate"])
+        df["OwnerCreationDate"] = pd.to_datetime(df["OwnerCreationDate"])
+        df["NumTags"] = df[["Tag1", "Tag2", "Tag3", "Tag4", "Tag5"]].notnull().sum(axis=1)
+        df["TimeDiffSinceRegistration"] = (df["PostCreationDate"] - df["OwnerCreationDate"]).dt.seconds
+
         features = df.drop(columns=["OpenStatus"])
 
         label_encoder = LabelEncoder()
@@ -33,7 +38,14 @@ class StackOverflowDataset(Dataset):
 
         undersampler = RandomUnderSampler(sampling_strategy={3: 40_000},
                                           random_state=seed)
-        self.features, self.targets = undersampler.fit_resample(features, targets)
+        features, targets = undersampler.fit_resample(features, targets)
+
+        scaler = MinMaxScaler(feature_range=(-1, 1))
+
+        self.targets = targets
+        self.texts = features["Title"] + ". " + features["BodyMarkdown"]
+        self.meta = scaler.fit_transform(features[["TimeDiffSinceRegistration", "ReputationAtPostCreation",
+                                                  "OwnerUndeletedAnswerCountAtPostTime", "NumTags"]])
 
         self._tokenizer = BertTokenizer.from_pretrained("bert-base-cased")
 
@@ -42,17 +54,11 @@ class StackOverflowDataset(Dataset):
         return compute_class_weight("balanced", classes=np.unique(self.targets), y=self.targets)
 
     def __getitem__(self, index):
-        features = self.features.iloc[index].copy()
+        meta = self.meta[index]
+        text = self.texts.iloc[index]
         target = self.targets[index]
 
-        features["PostCreationDate"] = pd.to_datetime(features["PostCreationDate"])
-        features["OwnerCreationDate"] = pd.to_datetime(features["OwnerCreationDate"])
-        features["NumTags"] = features[["Tag1", "Tag2", "Tag3", "Tag4", "Tag5"]].notnull().sum()
-        features["TimeDiffSinceRegistration"] = features["PostCreationDate"] - features["OwnerCreationDate"]
-
-        title = features["Title"]
-        body = md_to_text(features["BodyMarkdown"])
-        text = title + ". " + body
+        text = md_to_text(text)
 
         encoding = self._tokenizer.encode_plus(
             text,
@@ -69,17 +75,11 @@ class StackOverflowDataset(Dataset):
             'input_ids': encoding['input_ids'].flatten(),
             'target': torch.tensor(target, dtype=torch.int),
             'attention_mask': encoding['attention_mask'].flatten(),
-            "meta": torch.tensor([
-                features["TimeDiffSinceRegistration"].seconds,
-                features["ReputationAtPostCreation"],
-                features["OwnerUndeletedAnswerCountAtPostTime"],
-                features["NumTags"]
-            ], dtype=torch.float32)
-
+            "meta": torch.tensor(meta, dtype=torch.float32)
         }
 
     def __len__(self):
-        return len(self.features)
+        return len(self.texts)
 
 
 class StackOverflowDataModule(pl.LightningDataModule):
