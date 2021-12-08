@@ -45,7 +45,7 @@ class StackOverflowDataset(Dataset):
 
         encoding = self._tokenizer.encode_plus(
             text,
-            max_length=428,
+            max_length=512,
             truncation=True,
             return_tensors="pt",
             padding="max_length",
