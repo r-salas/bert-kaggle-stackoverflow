@@ -12,6 +12,7 @@ import pytorch_lightning as pl
 import torch.nn.functional as F
 
 from typing import Optional
+from sklearn.metrics import log_loss
 from sklearn.metrics import ConfusionMatrixDisplay
 from transformers import BertModel, AdamW, get_linear_schedule_with_warmup
 
@@ -106,12 +107,14 @@ class StackOverflowClassifier(pl.LightningModule):
 
             self._val_accuracy(y_pred_proba, target)
 
-        return {"target": target.cpu().numpy(), "predictions": y_pred.cpu().numpy()}
+        return {"target": target.cpu().numpy(), "predictions": y_pred.cpu().numpy(),
+                "probabilities": y_pred_proba.cpu().numpy()}
 
     def validation_epoch_end(self, outputs):
         if not self.trainer.sanity_checking:
             targets = np.concatenate([x["target"] for x in outputs])
             predictions = np.vstack([x["predictions"] for x in outputs])
+            probabilities = np.vstack([x["probabilities"] for x in outputs])
 
             cm = ConfusionMatrixDisplay.from_predictions(targets, np.argmax(predictions, 1),
                                                          display_labels=["not a real question", "not constructive",
@@ -124,6 +127,7 @@ class StackOverflowClassifier(pl.LightningModule):
 
             self.log_dict({
                 "val/accuracy": self._val_accuracy.compute(),
+                "val/log_loss": log_loss(targets, probabilities)
             })
 
         self._val_accuracy.reset()
