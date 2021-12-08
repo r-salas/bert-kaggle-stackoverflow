@@ -20,7 +20,7 @@ class StackOverflowClassifier(pl.LightningModule):
         super().__init__()
 
         self.bert = BertModel.from_pretrained("bert-base-cased")
-        self.drop = nn.Dropout(p=0.3)
+        self.drop = nn.Dropout(p=0.5)
         self.out = nn.Linear(self.bert.config.hidden_size, 5)
 
         self._val_accuracy = torchmetrics.Accuracy(num_classes=5)
