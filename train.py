@@ -15,10 +15,10 @@ from dataset import StackOverflowDataModule
 
 
 def train(data: str, output: str = "latest.ckpt", batch_size: int = 16, epochs: int = 10, num_workers: int = 0,
-          seed: int = 0, gpus: int = -1, accelerator: Optional[str] = "ddp"):
+          seed: int = 0, gpus: int = -1, strategy: Optional[str] = None):
     if not torch.cuda.is_available():
         gpus = None
-        accelerator = None
+        strategy = None
 
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -26,7 +26,7 @@ def train(data: str, output: str = "latest.ckpt", batch_size: int = 16, epochs: 
     model = StackOverflowClassifier()
     datamodule = StackOverflowDataModule(data, batch_size=batch_size, num_workers=num_workers, seed=seed)
 
-    trainer = pl.Trainer(gradient_clip_val=1.0, max_epochs=epochs, gpus=gpus, accelerator=accelerator)
+    trainer = pl.Trainer(gradient_clip_val=1.0, max_epochs=epochs, gpus=gpus, accelerator=strategy)
 
     trainer.fit(model, datamodule=datamodule)
 
