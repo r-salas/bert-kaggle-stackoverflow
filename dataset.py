@@ -30,7 +30,7 @@ class StackOverflowDataset(Dataset):
         label_encoder = LabelEncoder()
         targets = label_encoder.fit_transform(df["OpenStatus"])
 
-        undersampler = RandomUnderSampler(random_state=seed)
+        undersampler = RandomUnderSampler(sampling_strategy="majority", random_state=seed)
         self.features, self.targets = undersampler.fit_resample(features, targets)
 
         self._tokenizer = BertTokenizer.from_pretrained("bert-base-cased")
