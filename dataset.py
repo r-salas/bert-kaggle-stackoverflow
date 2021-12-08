@@ -12,6 +12,7 @@ import pytorch_lightning as pl
 
 from typing import Optional
 from transformers import BertTokenizer
+from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from imblearn.under_sampling import RandomUnderSampler
 from torch.utils.data import Dataset, DataLoader, Subset
@@ -25,7 +26,9 @@ class StackOverflowDataset(Dataset):
         df = pd.read_csv(fpath, index_col="PostId")
 
         features = df.drop(columns=["OpenStatus"])
-        targets = df["OpenStatus"]
+
+        label_encoder = LabelEncoder()
+        targets = label_encoder.fit_transform(df["OpenStatus"])
 
         undersampler = RandomUnderSampler(random_state=seed)
         self.features, self.targets = undersampler.fit_resample(features, targets)
