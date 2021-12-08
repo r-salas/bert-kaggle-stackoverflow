@@ -12,11 +12,11 @@ import pytorch_lightning as pl
 
 from typing import Optional
 from transformers import BertTokenizer
-from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from imblearn.under_sampling import RandomUnderSampler
 from torch.utils.data import Dataset, DataLoader, Subset
 from sklearn.utils.class_weight import compute_class_weight
+from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 
 from utils import md_to_text
 
