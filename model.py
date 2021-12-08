@@ -85,16 +85,21 @@ class StackOverflowClassifier(pl.LightningModule):
         if not self.trainer.sanity_checking:
             self.log("val/loss", loss)
 
-            cm = ConfusionMatrixDisplay.from_predictions(target.cpu().numpy(), np.argmax(y_pred.cpu().numpy(), 1))
+            self._val_accuracy(y_pred_proba, target)
+
+        return {"target": target.cpu().numpy(), "predictions": y_pred.cpu().numpy()}
+
+    def validation_epoch_end(self, outputs):
+        if not self.trainer.sanity_checking:
+            targets = np.concatenate([x["target"] for x in outputs])
+            predictions = np.vstack([x["predictions"] for x in outputs])
+
+            cm = ConfusionMatrixDisplay.from_predictions(targets, np.argmax(predictions, 1))
 
             self.logger.experiment.log({
                 "conf": cm.figure_
             }, step=self.current_epoch)
 
-            self._val_accuracy(y_pred_proba, target)
-
-    def validation_epoch_end(self, outputs):
-        if not self.trainer.sanity_checking:
             self.log_dict({
                 "val/accuracy": self._val_accuracy.compute(),
             })
