@@ -17,10 +17,10 @@ transformers = "*"
 imbalanced-learn = "*"
 pytorch-lightning = "*"
 wandb = "*"
+matplotlib = "*"
 
 [dev-packages]
 jupyterlab = "*"
-matplotlib = "*"
 seaborn = "*"
 pandarallel = "*"
 
