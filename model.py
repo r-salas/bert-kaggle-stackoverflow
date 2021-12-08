@@ -100,7 +100,7 @@ class StackOverflowClassifier(pl.LightningModule):
 
             self.logger.experiment.log({
                 "conf": cm.figure_
-            }, step=self.current_epoch)
+            })
 
             self.log_dict({
                 "val/accuracy": self._val_accuracy.compute(),
