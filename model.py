@@ -39,7 +39,7 @@ class StackOverflowClassifier(pl.LightningModule):
         y_pred = self(input_ids, attention_mask).squeeze()
         y_pred_proba = torch.softmax(y_pred, 1)
 
-        loss = F.cross_entropy(y_pred, target.float())
+        loss = F.cross_entropy(y_pred, target)
 
         self.log("train/loss", loss)
 
@@ -76,7 +76,7 @@ class StackOverflowClassifier(pl.LightningModule):
         y_pred = self(input_ids, attention_mask).squeeze()
         y_pred_proba = torch.softmax(y_pred, 1)
 
-        loss = F.cross_entropy(y_pred, target.float())
+        loss = F.cross_entropy(y_pred, target)
 
         self.log("val/loss", loss)
 
