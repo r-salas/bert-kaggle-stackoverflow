@@ -55,7 +55,7 @@ class StackOverflowDataset(Dataset):
 
         return {
             'input_ids': encoding['input_ids'].flatten(),
-            'target': torch.tensor(target, dtype=torch.int32),
+            'target': torch.tensor(target, dtype=torch.int),
             'attention_mask': encoding['attention_mask'].flatten(),
         }
 
