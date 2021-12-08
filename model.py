@@ -23,12 +23,7 @@ class StackOverflowClassifier(pl.LightningModule):
         self.out = nn.Linear(self.bert.config.hidden_size, 5)
 
         self._val_accuracy = torchmetrics.Accuracy(num_classes=5)
-        self._val_precision = torchmetrics.Accuracy(num_classes=5)
-        self._val_recall = torchmetrics.Recall(num_classes=5)
-
         self._train_accuracy = torchmetrics.Accuracy(num_classes=5)
-        self._train_precision = torchmetrics.Accuracy(num_classes=5)
-        self._train_recall = torchmetrics.Recall(num_classes=5)
 
     def forward(self, input_ids, attention_mask):
         _, output = self.bert(input_ids=input_ids, attention_mask=attention_mask, return_dict=False)
@@ -42,15 +37,13 @@ class StackOverflowClassifier(pl.LightningModule):
         attention_mask = batch["attention_mask"]
 
         y_pred = self(input_ids, attention_mask).squeeze()
-        y_pred_proba = torch.sigmoid(y_pred)
+        y_pred_proba = torch.softmax(y_pred, 1)
 
-        loss = F.binary_cross_entropy_with_logits(y_pred, target.float())
+        loss = F.cross_entropy(y_pred, target.float())
 
         self.log("train/loss", loss)
 
-        self._train_recall(y_pred_proba, target)
         self._train_accuracy(y_pred_proba, target)
-        self._train_precision(y_pred_proba, target)
 
         return loss
 
@@ -72,9 +65,7 @@ class StackOverflowClassifier(pl.LightningModule):
 
     def training_epoch_end(self, outputs):
         self.log_dict({
-            "val/recall": self._train_recall.compute(),
             "val/accuracy": self._train_accuracy.compute(),
-            "val/precision": self._train_precision.compute()
         })
 
     def validation_step(self, batch, batch_idx):
@@ -83,19 +74,15 @@ class StackOverflowClassifier(pl.LightningModule):
         attention_mask = batch["attention_mask"]
 
         y_pred = self(input_ids, attention_mask).squeeze()
-        y_pred_proba = torch.sigmoid(y_pred)
+        y_pred_proba = torch.softmax(y_pred, 1)
 
-        loss = F.binary_cross_entropy_with_logits(y_pred, target.float())
+        loss = F.cross_entropy(y_pred, target.float())
 
         self.log("val/loss", loss)
 
-        self._val_recall(y_pred_proba, target)
         self._val_accuracy(y_pred_proba, target)
-        self._val_precision(y_pred_proba, target)
 
     def validation_epoch_end(self, outputs):
         self.log_dict({
-            "val/recall": self._val_recall.compute(),
             "val/accuracy": self._val_accuracy.compute(),
-            "val/precision": self._val_precision.compute()
         })
