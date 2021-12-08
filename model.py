@@ -6,11 +6,13 @@
 
 import torch
 import wandb
+import numpy as np
 import torchmetrics
 import torch.nn as nn
 import pytorch_lightning as pl
 import torch.nn.functional as F
 
+from sklearn.metrics import ConfusionMatrixDisplay
 from transformers import BertModel, AdamW, get_linear_schedule_with_warmup
 
 
@@ -83,13 +85,11 @@ class StackOverflowClassifier(pl.LightningModule):
         if not self.trainer.sanity_checking:
             self.log("val/loss", loss)
 
+            cm = ConfusionMatrixDisplay.from_predictions(target.cpu().numpy(), np.argmax(y_pred.cpu().numpy(), 1))
+
             self.logger.experiment.log({
-                'conf': wandb.plot.confusion_matrix(
-                    probs=y_pred_proba.cpu().numpy(), y_true=target.cpu().numpy(),
-                    class_names=["not a real question", "not constructive", "off topic", "open", "too localized"],
-                    title=f"Val: Epoch {self.current_epoch}"
-                )
-            })
+                "conf": cm.figure_
+            }, step=self.current_epoch)
 
             self._val_accuracy(y_pred_proba, target)
 
