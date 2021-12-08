@@ -94,7 +94,9 @@ class StackOverflowClassifier(pl.LightningModule):
             self._val_accuracy(y_pred_proba, target)
 
     def validation_epoch_end(self, outputs):
-        self.log_dict({
-            "val/accuracy": self._val_accuracy.compute(),
-        })
+        if not self.trainer.sanity_checking:
+            self.log_dict({
+                "val/accuracy": self._val_accuracy.compute(),
+            })
+
         self._val_accuracy.reset()
