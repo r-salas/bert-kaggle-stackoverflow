@@ -26,11 +26,6 @@ class StackOverflowDataset(Dataset):
     def __init__(self, fpath, seed: Optional[int] = None):
         df = pd.read_csv(fpath, index_col="PostId")
 
-        df["PostCreationDate"] = pd.to_datetime(df["PostCreationDate"])
-        df["OwnerCreationDate"] = pd.to_datetime(df["OwnerCreationDate"])
-        df["NumTags"] = df[["Tag1", "Tag2", "Tag3", "Tag4", "Tag5"]].notnull().sum(axis=1)
-        df["TimeDiffSinceRegistration"] = (df["PostCreationDate"] - df["OwnerCreationDate"]).dt.seconds
-
         features = df.drop(columns=["OpenStatus"])
 
         label_encoder = LabelEncoder()
@@ -39,6 +34,11 @@ class StackOverflowDataset(Dataset):
         undersampler = RandomUnderSampler(sampling_strategy={3: 40_000},
                                           random_state=seed)
         features, targets = undersampler.fit_resample(features, targets)
+
+        features["PostCreationDate"] = pd.to_datetime(features["PostCreationDate"])
+        features["OwnerCreationDate"] = pd.to_datetime(features["OwnerCreationDate"])
+        features["NumTags"] = features[["Tag1", "Tag2", "Tag3", "Tag4", "Tag5"]].notnull().sum(axis=1)
+        features["TimeDiffSinceRegistration"] = (features["PostCreationDate"] - features["OwnerCreationDate"]).dt.seconds
 
         scaler = MinMaxScaler(feature_range=(-1, 1))
 
