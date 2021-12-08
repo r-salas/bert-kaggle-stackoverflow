@@ -32,27 +32,21 @@ class StackOverflowClassifier(pl.LightningModule):
         self.class_weights = class_weights
 
         self.bert = BertModel.from_pretrained("bert-base-cased")
-        self.drop = nn.Dropout(p=0.3)
+        self.drop = nn.Dropout(p=0.2)
 
-        self.text_fc = nn.Linear(self.bert.config.hidden_size, 128)
-
-        self.out = nn.Linear(128 + 4, num_classes)
-
-        for param in self.bert.parameters():
-            param.requires_grad = False
+        self.classifier = nn.Sequential(
+            nn.Linear(self.bert.config.hidden_size + 4, 128),
+            nn.ReLU(),
+            nn.Linear(128, num_classes)
+        )
 
         self._val_accuracy = torchmetrics.Accuracy(num_classes=num_classes)
         self._train_accuracy = torchmetrics.Accuracy(num_classes=num_classes)
 
     def forward(self, input_ids, attention_mask, meta):
-        _, text_output = self.bert(input_ids=input_ids, attention_mask=attention_mask, return_dict=False)
-        text_output = self.drop(text_output)
-        text_output = self.text_fc(text_output)
-        text_output = torch.tanh(text_output)
-
-        output = self.out(torch.cat((meta, text_output), dim=1))
-
-        return output
+        _, output = self.bert(input_ids=input_ids, attention_mask=attention_mask, return_dict=False)
+        output = torch.cat((meta, output), dim=1)
+        return self.classifier(output)
 
     def training_step(self, batch, batch_idx):
         meta = batch["meta"]
