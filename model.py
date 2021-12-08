@@ -38,6 +38,9 @@ class StackOverflowClassifier(pl.LightningModule):
 
         self.out = nn.Linear(128 + 4, num_classes)
 
+        for param in self.bert.parameters():
+            param.requires_grad = False
+
         self._val_accuracy = torchmetrics.Accuracy(num_classes=num_classes)
         self._train_accuracy = torchmetrics.Accuracy(num_classes=num_classes)
 
