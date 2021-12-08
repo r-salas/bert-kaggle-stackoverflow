@@ -12,6 +12,7 @@ import pytorch_lightning as pl
 from typing import Optional
 from model import StackOverflowClassifier
 from dataset import StackOverflowDataModule
+from pytorch_lightning.loggers import WandbLogger
 
 
 def train(data: str, output: str = "latest.ckpt", batch_size: int = 16, epochs: int = 10, num_workers: int = 0,
@@ -23,10 +24,12 @@ def train(data: str, output: str = "latest.ckpt", batch_size: int = 16, epochs: 
     np.random.seed(seed)
     torch.manual_seed(seed)
 
+    logger = WandbLogger(project="kaggle-stackoverflow")
+
     model = StackOverflowClassifier()
     datamodule = StackOverflowDataModule(data, batch_size=batch_size, num_workers=num_workers, seed=seed)
 
-    trainer = pl.Trainer(gradient_clip_val=1.0, max_epochs=epochs, gpus=gpus, accelerator=strategy)
+    trainer = pl.Trainer(gradient_clip_val=1.0, max_epochs=epochs, gpus=gpus, accelerator=strategy, logger=logger)
 
     trainer.fit(model, datamodule=datamodule)
 
