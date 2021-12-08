@@ -32,23 +32,25 @@ class StackOverflowClassifier(pl.LightningModule):
 
         self.bert = BertModel.from_pretrained("bert-base-cased")
         self.drop = nn.Dropout(p=0.5)
-        self.out = nn.Linear(self.bert.config.hidden_size, num_classes)
+        self.out = nn.Linear(self.bert.config.hidden_size + 4, num_classes)
 
         self._val_accuracy = torchmetrics.Accuracy(num_classes=num_classes)
         self._train_accuracy = torchmetrics.Accuracy(num_classes=num_classes)
 
-    def forward(self, input_ids, attention_mask):
-        _, output = self.bert(input_ids=input_ids, attention_mask=attention_mask, return_dict=False)
+    def forward(self, input_ids, attention_mask, meta):
+        _, text_output = self.bert(input_ids=input_ids, attention_mask=attention_mask, return_dict=False)
+        output = torch.cat((meta, text_output), dim=1)
         output = self.drop(output)
         output = self.out(output)
         return output
 
     def training_step(self, batch, batch_idx):
+        meta = batch["meta"]
         target = batch["target"]
         input_ids = batch["input_ids"]
         attention_mask = batch["attention_mask"]
 
-        y_pred = self(input_ids, attention_mask).squeeze()
+        y_pred = self(input_ids, attention_mask, meta)
         y_pred_proba = torch.softmax(y_pred, -1)
 
         loss = F.cross_entropy(y_pred, target.long(),
@@ -83,11 +85,12 @@ class StackOverflowClassifier(pl.LightningModule):
         self._train_accuracy.reset()
 
     def validation_step(self, batch, batch_idx):
+        meta = batch["meta"]
         target = batch["target"]
         input_ids = batch["input_ids"]
         attention_mask = batch["attention_mask"]
 
-        y_pred = self(input_ids, attention_mask)
+        y_pred = self(input_ids, attention_mask, meta)
         y_pred_proba = torch.softmax(y_pred, -1)
 
         loss = F.cross_entropy(y_pred, target.long())

@@ -42,7 +42,13 @@ class StackOverflowDataset(Dataset):
         return compute_class_weight("balanced", classes=np.unique(self.targets), y=self.targets)
 
     def __getitem__(self, index):
-        features, target = self.features.iloc[index], self.targets[index]
+        features = self.features.iloc[index].copy()
+        target = self.targets[index]
+
+        features["PostCreationDate"] = pd.to_datetime(features["PostCreationDate"])
+        features["OwnerCreationDate"] = pd.to_datetime(features["OwnerCreationDate"])
+        features["NumTags"] = features[["Tag1", "Tag2", "Tag3", "Tag4", "Tag5"]].notnull().sum()
+        features["TimeDiffSinceRegistration"] = features["PostCreationDate"] - features["OwnerCreationDate"]
 
         title = features["Title"]
         body = md_to_text(features["BodyMarkdown"])
@@ -63,6 +69,13 @@ class StackOverflowDataset(Dataset):
             'input_ids': encoding['input_ids'].flatten(),
             'target': torch.tensor(target, dtype=torch.int),
             'attention_mask': encoding['attention_mask'].flatten(),
+            "meta": torch.tensor([
+                features["TimeDiffSinceRegistration"].seconds,
+                features["ReputationAtPostCreation"],
+                features["OwnerUndeletedAnswerCountAtPostTime"],
+                features["NumTags"]
+            ], dtype=torch.float32)
+
         }
 
     def __len__(self):
