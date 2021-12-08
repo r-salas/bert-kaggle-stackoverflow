@@ -36,7 +36,7 @@ class StackOverflowDataset(Dataset):
         self._tokenizer = BertTokenizer.from_pretrained("bert-base-cased")
 
     def __getitem__(self, index):
-        features, target = self.features.iloc[index], self.targets.iloc[index]
+        features, target = self.features.iloc[index], self.targets[index]
 
         title = features["Title"]
         body = md_to_text(features["BodyMarkdown"])
