@@ -31,7 +31,7 @@ class StackOverflowDataset(Dataset):
         label_encoder = LabelEncoder()
         targets = label_encoder.fit_transform(df["OpenStatus"])
 
-        undersampler = RandomUnderSampler(sampling_strategy={3: 50_000},
+        undersampler = RandomUnderSampler(sampling_strategy={3: 40_000},
                                           random_state=seed)
         self.features, self.targets = undersampler.fit_resample(features, targets)
 
