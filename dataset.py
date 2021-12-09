@@ -37,8 +37,9 @@ class StackOverflowDataset(Dataset):
 
         features["PostCreationDate"] = pd.to_datetime(features["PostCreationDate"])
         features["OwnerCreationDate"] = pd.to_datetime(features["OwnerCreationDate"])
+        features["TimeDiffSinceRegistration"] = (features["PostCreationDate"] -
+                                                 features["OwnerCreationDate"]).dt.seconds
         features["NumTags"] = features[["Tag1", "Tag2", "Tag3", "Tag4", "Tag5"]].notnull().sum(axis=1)
-        features["TimeDiffSinceRegistration"] = (features["PostCreationDate"] - features["OwnerCreationDate"]).dt.seconds
 
         scaler = MinMaxScaler(feature_range=(-1, 1))
 

@@ -32,12 +32,10 @@ class StackOverflowClassifier(pl.LightningModule):
         self.class_weights = class_weights
 
         self.bert = BertModel.from_pretrained("bert-base-cased")
-        self.drop = nn.Dropout(p=0.2)
 
         self.classifier = nn.Sequential(
-            nn.Linear(self.bert.config.hidden_size + 4, 128),
-            nn.ReLU(),
-            nn.Linear(128, num_classes)
+            nn.Dropout(0.5),
+            nn.Linear(self.bert.config.hidden_size + 4, num_classes)
         )
 
         self._val_accuracy = torchmetrics.Accuracy(num_classes=num_classes)
