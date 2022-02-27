@@ -25,11 +25,6 @@ $ pipenv install
 ```
 2. Download dataset **Predict Closed Questions on Stack Overflow** from [Kaggle](https://www.kaggle.com/c/predict-closed-questions-on-stack-overflow/data)
 
-3. Log to [wandb](https://wandb.ai/home) to track metrics
-
-```console
-$ wandb login
-```
 
 ## Training
 
