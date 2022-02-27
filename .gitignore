@@ -142,3 +142,6 @@ lightning_logs
 
 # Wandb logs
 wandb
+
+# Mac junk
+.DS_Store
